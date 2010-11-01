@@ -63,7 +63,7 @@ private void decay_rsrc(mixed *rsrc, mixed *grsrc, int time)
     t = rsrc[RSRC_DECAYTIME];
 
     do {
-	usage *= decay;
+	usage = floor(usage * decay);
 	if (usage < 0.5) {
 	    t = time + period;
 	    break;
@@ -72,7 +72,7 @@ private void decay_rsrc(mixed *rsrc, mixed *grsrc, int time)
     } while (time >= t);
 
     rsrc[RSRC_DECAYTIME] = t;
-    rsrc[RSRC_USAGE] = floor(usage + 0.5);
+    rsrc[RSRC_USAGE] = usage;
 }
 
 /*
