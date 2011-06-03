@@ -10,18 +10,38 @@ int maxticks;		/* maximum amount of ticks currently allowed */
 
 /*
  * NAME:	create()
- * DESCRIPTION:	initialize resource mapping
+ * DESCRIPTION:	initialize max ticks
  */
 static void create(int clone)
 {
     if (clone) {
-	resources = ([
-			"stack" :	({   0, -1, 0 }),
-			"ticks" :	({   0, -1, 0 }),
-			"tick usage" :	({ 0.0, -1, 0 })
-		    ]);
 	maxticks = -1;
 	rsrcd = find_object(RSRCD);
+    }
+}
+
+/*
+ * NAME:	set_resources()
+ * DESCRIPTION:	initialize resource mapping
+ */
+void set_resources(string *new_resources)
+{
+    if (previous_object() == rsrcd) {
+	int sz;
+
+	resources = ([ ]);
+
+	for (sz = sizeof(new_resources) - 1; sz >= 0; sz--) {
+	    string resource;
+
+	    resource = new_resources[sz];
+
+	    if (resource == "stack" || resource == "ticks") {
+		resources[resource] = ({   0, -1, 0 });
+	    } else if (resource == "tick usage") {
+		resources[resource] = ({ 0.0, -1, 0 });
+	    }
+	}
     }
 }
 

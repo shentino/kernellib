@@ -55,11 +55,15 @@ void add_owner(string owner)
 
 	rlimits (-1; -1) {
 	    obj = clone_object(RSRCOBJ);
+	    obj->set_resources(map_indices(resources) &
+		({ "stack", "ticks", "tick usage" }) );
 	    catch {
 		owners[owner] = obj;
 		obj->set_owner(owner);
-		owners["System"]->rsrc_incr("objects", nil, 1,
-					    resources["objects"], TRUE);
+		if (resources["objects"]) {
+		    owners["System"]->rsrc_incr("objects", nil, 1,
+			resources["objects"], TRUE);
+		}
 		olimits[owner] = ({ -1, -1, 0 });
 	    } : {
 		destruct_object(obj);
@@ -173,7 +177,13 @@ mixed *query_rsrc(string name)
 	object *objects;
 	int i;
 
-	rsrc = resources[name][..];
+	rsrc = resources[name];
+
+	if (!rsrc) {
+	    return ({ 0, -1, 0, 0, 0 });
+	}
+
+	rsrc = rsrc[..];
 	objects = map_values(owners);
 	usage = (rsrc[GRSRC_DECAY] == 0) ? 0 : 0.0;
 	for (i = sizeof(objects); --i >= 0; ) {
@@ -209,6 +219,11 @@ void rsrc_set_limit(string owner, string name, int max)
 	if (!(obj=owners[owner])) {
 	    error("No such resource owner: " + owner);
 	}
+
+	if (!resources[name]) {
+	    error("No such resource");
+	}
+
 	obj->rsrc_set_limit(name, max, resources[name][GRSRC_DECAY]);
     }
 }
@@ -225,6 +240,11 @@ mixed *rsrc_get(string owner, string name)
 	if (!(obj=owners[owner])) {
 	    error("No such resource owner: " + owner);
 	}
+
+	if (!resources[name]) {
+	    return ({ 0, -1, 0, 0, 0 });
+	}
+
 	return obj->rsrc_get(name, resources[name]);
     }
 }
@@ -243,6 +263,12 @@ int rsrc_incr(string owner, string name, mixed index, int incr,
 	if (!(obj=owners[owner])) {
 	    error("No such resource owner: " + owner);
 	}
+
+	if (!resources[name]) {
+	    /* successful no-op */
+	    return TRUE;
+	}
+
 	return obj->rsrc_incr(name, index, incr, resources[name], force);
     }
 }
@@ -261,7 +287,11 @@ mixed *call_limits(mixed *previous, string owner, int stack, int ticks)
 	/* determine available stack */
 	maxstack = limits[LIM_MAX_STACK];
 	if (maxstack < 0) {
-	    maxstack = resources["stack"][GRSRC_MAX];
+	    if (resources["stack"]) {
+		maxstack = resources["stack"][GRSRC_MAX];
+	    } else {
+		maxstack = -1;
+	    }
 	}
 	if (maxstack > stack && stack >= 0) {
 	    maxstack = stack;
@@ -273,15 +303,21 @@ mixed *call_limits(mixed *previous, string owner, int stack, int ticks)
 	/* determine available ticks */
 	maxticks = limits[LIM_MAX_TICKS];
 	if (maxticks < 0) {
-	    maxticks = resources["ticks"][GRSRC_MAX];
+	    if (resources["ticks"]) {
+		maxticks = resources["ticks"][GRSRC_MAX];
+	    } else {
+		maxticks = -1;
+	    }
 	} else {
 	    int *usage;
 
-	    usage = resources["tick usage"];
-	    if ((time=time()) - limits[LIM_MAX_TIME] >= usage[GRSRC_PERIOD]) {
-		/* decay ticks */
-		owners[owner]->decay_ticks(limits, time, usage);
-		maxticks = limits[LIM_MAX_TICKS];
+	    if (resources["tick usage"]) {
+		usage = resources["tick usage"];
+		if ((time=time()) - limits[LIM_MAX_TIME] >= usage[GRSRC_PERIOD]) {
+		    /* decay ticks */
+		    owners[owner]->decay_ticks(limits, time, usage);
+		    maxticks = limits[LIM_MAX_TICKS];
+		}
 	    }
 	}
 	if (maxticks > ticks - 25 && ticks >= 0) {
@@ -320,8 +356,10 @@ int update_ticks(mixed *limits, int ticks)
 	    if (ticks < 0) {
 		return -1;
 	    }
-	    owners[limits[LIM_OWNER]]->update_ticks(ticks,
-						    resources["tick usage"]);
+	    if (resources["tick usage"]) {
+		owners[limits[LIM_OWNER]]->update_ticks(
+		    ticks, resources["tick usage"]);
+	    }
 	    ticks = (limits[LIM_NEXT] && limits[LIM_TICKS] >= 0) ?
 		     limits[LIM_NEXT][LIM_MAXTICKS] -= ticks : -1;
 	}
@@ -598,11 +636,11 @@ void reboot()
 	int i;
 
 	objects = OBJREGD->remove_editors();
-	for (i = sizeof(objects); --i >= 0; ) {
-	    owners[objects[i]->query_owner()]->rsrc_incr("editors", objects[i],
-							 -1,
-							 resources["editors"],
-							 TRUE);
+	if (resources["editors"]) {
+	    for (i = sizeof(objects); --i >= 0; ) {
+		owners[objects[i]->query_owner()]->rsrc_incr(
+		    "editors", objects[i], -1, resources["editors"], TRUE);
+	    }
 	}
 
 	downtime = time() - downtime;
