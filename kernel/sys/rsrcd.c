@@ -140,6 +140,20 @@ void set_rsrc(string name, int max, int decay, int period)
 	    }
 	} else {
 	    /* new resource */
+	    switch(name) {
+	    case "objects":
+	    case "events":
+	    case "stack":
+	    case "ticks":
+	    case "filequota":
+	    case "editors":
+	    case "create stack":
+	    case "create ticks":
+		if (decay != 0) {
+		    error("Invalid decay for predefined resource");
+		}
+		break;
+	    }
 	    resources[name] = ({ max, decay, period });
 	}
     }
