@@ -29,6 +29,7 @@ static void create()
 {
     /* initial resources */
     resources = ([
+      "callouts" :	({ -1,  0,    0 }),
       "objects" :	({ -1,  0,    0 }),
       "events" :	({ -1,  0,    0 }),
       "stack" :		({ -1,  0,    0 }),
@@ -141,6 +142,7 @@ void set_rsrc(string name, int max, int decay, int period)
 	} else {
 	    /* new resource */
 	    switch(name) {
+	    case "callouts":
 	    case "objects":
 	    case "events":
 	    case "stack":
@@ -352,7 +354,7 @@ mixed *call_limits(mixed *previous, string owner, int stack, int ticks)
 void set_rlimits(string owner, int *limits)
 {
     if (previous_program() == RSRCOBJ) {
-    	olimits[owner] = limits;
+	olimits[owner] = limits;
     }
 }
 
