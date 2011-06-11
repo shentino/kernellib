@@ -862,17 +862,18 @@ static mixed remove_call_out(int handle)
 	    error("No callouts in non-persistent object");
 	}
 	rlimits (-1; -1) {
-	    object rsrcd;
+	    if ((delay = ::remove_call_out(handle)) != -1) {
+		object rsrcd;
 
-	    rsrcd = ::find_object(RSRCD);
+		rsrcd = ::find_object(RSRCD);
 
-	    if (!sscanf(object_name(this_object()), "/kernel/%*s")) {
-		rsrcd->rsrc_incr(owner, "callouts", this_object(), -1, TRUE);
-	    }
+		if (!sscanf(object_name(this_object()), "/kernel/%*s")) {
+		    rsrcd->rsrc_incr(owner, "callouts", this_object(), -1, TRUE);
+		}
 
-	    if ((delay=::remove_call_out(handle)) != -1 &&
-		rsrcd->remove_callout(nil, this_object(), handle)) {
+		if (rsrcd->remove_callout(nil, this_object(), handle)) {
 		    return 0;
+		}
 	    }
 	}
 	return delay;
