@@ -27,3 +27,5 @@
 1.3.6
 
  - Return callouts as a trackable resource.
+ - Fix callout accounting.
+ - Rename some variables for compatibility with function pointers.
