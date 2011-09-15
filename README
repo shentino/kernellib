@@ -11,3 +11,11 @@ the following empty directories to get started:
 A sample config file is here:
 
     /doc/kernel/kernel.dgd
+
+Note from shentino:
+
+If you wish to use the networking extensions of dgd with the kernel
+library, use the "networking" branch of the kernel library hosted on
+github by shentino, and not the "master" branch.
+
+Kudos for Dread for reporting this documentation faux pau.
