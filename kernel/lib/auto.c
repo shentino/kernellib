@@ -491,6 +491,19 @@ static object new_object(mixed obj, varargs string uid)
      */
     if (new) {
 	/*
+	 * check access
+	 */
+	if ((sscanf(str, "/kernel/%*s") != 0 && !KERNEL()) ||
+	    (creator != "System" &&
+	     !::find_object(ACCESSD)->access(object_name(this_object()), str, READ_ACCESS))) {
+	    /*
+	     * kernel objects can only be cloned by kernel objects, and cloning
+	     * in general requires read access
+	     */
+	    error("Access denied");
+	}
+
+	/*
 	 * check if object can be created
 	 */
 	if (!obj || sscanf(str, "%*s" + LIGHTWEIGHT_SUBDIR) == 0 ||
