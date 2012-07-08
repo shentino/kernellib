@@ -524,12 +524,12 @@ static void swapout()
  * NAME:	dump_state()
  * DESCRIPTION:	create a state dump
  */
-static void dump_state()
+static void dump_state(varargs int increment)
 {
     if (!access(owner, "/", FULL_ACCESS)) {
 	message("Permission denied.\n");
     } else {
-	::dump_state();
+	::dump_state(increment);
     }
 }
 
