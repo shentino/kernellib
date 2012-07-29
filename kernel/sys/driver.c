@@ -947,7 +947,14 @@ static void compile_error(string file, int line, string err)
 	errord->compile_error(file, line, err);
     } else {
 	send_message(file += ", " + line + ": " + err + "\n");
-	if (this_user() && (obj=this_user()->query_user())) {
+
+	obj = this_user();
+
+	while (obj && obj<-LIB_CONN) {
+	    obj = obj->query_user();
+	}
+
+	if (obj) {
 	    obj->message(file);
 	}
     }
