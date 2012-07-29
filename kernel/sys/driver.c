@@ -950,7 +950,7 @@ static void compile_error(string file, int line, string err)
 
 	obj = this_user();
 
-	while (obj && obj<-LIB_CONN) {
+	while (obj && function_object("query_user", obj) == LIB_CONN) {
 	    obj = obj->query_user();
 	}
 
