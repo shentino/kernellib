@@ -29,3 +29,12 @@
  - Return callouts as a trackable resource.
  - Fix callout accounting.
  - Rename some variables for compatibility with function pointers.
+ - Correction to upgrade instructions, for those who wish to skip removal
+   of callouts as a trackable resource.
+ - Document the networking branch
+ - Updated permission check for creating lightweight objects
+ - Recognize and document the hotboot argument to shutdown() as well as the
+   argument to dump_state()
+ - Sanity check a shutdown before reporting anything in the log.
+ - In the default error handler, don't assume that the connection
+   object is directly connected to the user object.
