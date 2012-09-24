@@ -219,6 +219,9 @@ int rsrc_incr(string name, mixed index, int incr, mixed *grsrc, int force)
 			catch {
 			    if (typeof(index) == T_OBJECT) {
 				/* let object keep track */
+				if (sscanf(object_name(index), "%*s#-1")) {
+				    error("Cannot use non-persistent object for resource index");
+				}
 				index->_F_rsrc_incr(name, incr);
 			    } else if (typeof(rsrc[RSRC_INDEXED]) != T_MAPPING)
 			    {
