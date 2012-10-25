@@ -645,7 +645,7 @@ void prepare_reboot()
  * NAME:	reboot()
  * DESCRIPTION:	recover from a reboot
  */
-void reboot()
+void reboot(int hotboot)
 {
     if (previous_program() == DRIVER) {
 	object *objects;
