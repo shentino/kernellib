@@ -459,23 +459,15 @@ void prepare_reboot()
  * NAME:	_restored()
  * DESCRIPTION:	re-initialize the system, with proper TLS on the stack
  */
-private void _restored(mixed *tls, int hotboot)
+private void _restored(mixed *tls)
 {
     message(status()[ST_VERSION] + "\n");
 
     rsrcd->reboot();
-
-    if (!hotboot) {
-	userd->reboot();
-    }
-
+    userd->reboot();
     if (initd) {
 	catch {
-	    if (hotboot) {
-		initd->reboot(hotboot);
-	    } else {
-		initd->reboot();
-	    }
+	    initd->reboot();
 	}
     }
 
@@ -486,9 +478,9 @@ private void _restored(mixed *tls, int hotboot)
  * NAME:	restored()
  * DESCRIPTION:	re-initialize system after a restore
  */
-static void restored(varargs int hotboot)
+static void restored()
 {
-    _restored(allocate(tls_size), hotboot);
+    _restored(allocate(tls_size));
 }
 
 /*
