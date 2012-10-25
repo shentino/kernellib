@@ -760,10 +760,8 @@ static void shutdown(varargs int hotboot)
 	error("Permission denied");
     }
     rlimits (-1; -1) {
+	::find_object(DRIVER)->message("System halted.\n");
 	::shutdown(hotboot);
-	if (!hotboot) {
-	    ::find_object(DRIVER)->message("System halted.\n");
-	}
     }
 }
 
