@@ -223,8 +223,7 @@ int rsrc_incr(string name, mixed index, int incr, mixed *grsrc, int force)
 				    error("Cannot use non-persistent object for resource index");
 				}
 				index->_F_rsrc_incr(name, incr);
-			    } else if (typeof(rsrc[RSRC_INDEXED]) != T_MAPPING)
-			    {
+			    } else if (typeof(rsrc[RSRC_INDEXED]) != T_MAPPING) {
 				rsrc[RSRC_INDEXED] = ([ index : incr ]);
 			    } else if (!rsrc[RSRC_INDEXED][index]) {
 				rsrc[RSRC_INDEXED][index] = incr;
