@@ -24,7 +24,7 @@
    responsibility for accuracy if restored.
  - Pass on the new optional argument to shutdown().
 
-1.3.6
+1.3.6 - 1.3.7
 
  - Return callouts as a trackable resource.
  - Fix callout accounting.
@@ -38,3 +38,16 @@
  - Sanity check a shutdown before reporting anything in the log.
  - In the default error handler, don't assume that the connection
    object is directly connected to the user object.
+
+1.3.8
+
+ - Don't allow non-persistent objects to be used as a resource index.
+
+1.4
+
+ - Hotboot detection: Users connected and editors dumped. Later reverted.
+
+1.4.1
+
+ - Replaced Hotboot support with upstream version.
+ - Add empty directories to the repository, update installation instructions.
