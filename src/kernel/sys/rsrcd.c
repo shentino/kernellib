@@ -106,7 +106,7 @@ void remove_owner(string owner)
  */
 string *query_owners()
 {
-    if (previous_program() == API_RSRC) {
+    if (KERNEL()) {
 	return map_indices(owners);
     }
 }

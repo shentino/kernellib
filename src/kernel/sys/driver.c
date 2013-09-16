@@ -363,6 +363,160 @@ private object load(string path)
 }
 
 /*
+ * NAME:	count_filequota()
+ * DESCRIPTION:	count filequota resource from scratch
+ */
+mapping count_filequota()
+{
+    if (KERNEL() || SYSTEM()) {
+	mapping filequota;
+	mixed **dir;
+	string *filenames;
+	int *sizes;
+	int sz;
+	int i;
+
+	filequota = ([ ]);
+	filequota[nil] = 0;
+	filequota["System"] = 0;
+
+	/* first, the root directory's contents */
+	dir = get_dir("/*");
+	filenames = dir[0];
+	sizes = dir[1];
+
+	for (sz = sizeof(filenames); --sz >= 0; ) {
+	    int count;
+
+	    switch("/" + filenames[sz]) {
+	    case USR_DIR:
+	        /* owners of contents vary */
+		if (sizes[sz] == -2) {
+		    /* it's a directory, dig in */
+		    mixed **usrdir;
+		    string *files;
+		    int *sizes;
+		    string *users;
+		    string *clear;
+		    string *owners;
+		    string *escheat;
+		    int sz;
+
+		    filequota[nil] += 1; /* one for /usr itself */
+		    usrdir = get_dir(USR_DIR + "/*");
+		    files = usrdir[0];
+		    sizes = usrdir[1];
+		    users = ({ });
+
+		    for (sz = sizeof(files); --sz >= 0; ) {
+			if (sizes[sz] == -2) {
+			    users += ({ files[sz] });
+			} else {
+			    /* this is a file?! */
+			    filequota[nil] +=
+				file_size(USR_DIR + "/" + files[sz]);
+			}
+		    }
+
+		    owners = rsrcd->query_owners();
+
+		    /* if anyone vanished, remove them */
+		    clear = owners - users;
+
+		    /* don't create new users */
+		    users &= owners;
+
+		    /* orphans belong to Ecru */
+		    escheat = users - owners;
+
+		    for (sz = sizeof(clear); --sz >= 0; ) {
+			filequota[clear[sz]] = 0;
+		    }
+
+		    for (sz = sizeof(users); --sz >= 0; ) {
+			int count;
+			string user;
+
+			user = users[sz];
+
+			count = file_size(USR_DIR + "/" + user, 1);
+
+			if (!filequota[user]) {
+			    filequota[user] = 0;
+			}
+
+			filequota[user] += count;
+		    }
+
+		    for (sz = sizeof(escheat); --sz >= 0; ) {
+			int count;
+			string user;
+
+			user = escheat[sz];
+
+			count = file_size(USR_DIR + "/" + user, 1);
+
+			filequota[nil] += count;
+		    }
+		} else {
+		    /* it's not a directory */
+		    /* the admin is a weirdo btw */
+		    filequota[nil] += file_size(USR_DIR);
+		}
+		break;
+
+	    case "/kernel":
+		/* /kernel is owned by System */
+		filequota["System"] += dir_size("/kernel");
+		break;
+
+	    default:
+		/* everything else is owned by Ecru */
+		filequota[nil] += file_size("/" + filenames[sz], 1);
+		break;
+	    }
+	}
+
+	return filequota;
+    }
+}
+
+/*
+ * NAME:	fix_filequota()
+ * DESCRIPTION:	correct filequota resource
+ */
+atomic void fix_filequota()
+{
+    if (KERNEL() || SYSTEM()) {
+	string *usernames;
+	int sz;
+	mapping filequota;
+
+	filequota = count_filequota();
+
+	sz = map_sizeof(filequota);
+	usernames = map_indices(filequota);
+
+	for (sz = map_sizeof(filequota); --sz >= 0; ) {
+	    int delta;
+	    mixed *rsrc;
+	    string name;
+
+	    name = usernames[sz];
+
+	    rsrc = rsrcd->rsrc_get(name, "filequota");
+
+	    delta = filequota[name] - rsrc[RSRC_USAGE];
+
+	    if (delta) {
+		rsrcd->rsrc_incr(usernames[sz], "filequota", nil, delta, 1);
+	    }
+	}
+    }
+}
+
+
+/*
  * NAME:	_initialize()
  * DESCRIPTION:	initialize system, with proper TLS on the stack
  */
@@ -390,12 +544,7 @@ private void _initialize(mixed *tls)
 
     /* create initial resource owners */
     rsrcd->add_owner("System");
-    rsrcd->rsrc_incr("System", "filequota", nil,
-		     dir_size("/kernel") + file_size(USR_DIR + "/System",
-		     TRUE));
     rsrcd->add_owner(nil);	/* Ecru */
-    rsrcd->rsrc_incr(nil, "filequota", nil,
-		     file_size("/doc", TRUE) + file_size("/include", TRUE));
 
     /* load remainder of manager objects */
     call_other(rsrcobj, "???");
@@ -407,9 +556,10 @@ private void _initialize(mixed *tls)
     users = (accessd->query_users() - ({ "System" })) | ({ "admin" });
     for (i = sizeof(users); --i >= 0; ) {
 	rsrcd->add_owner(users[i]);
-	rsrcd->rsrc_incr(users[i], "filequota", nil,
-			 file_size(USR_DIR + "/" + users[i], TRUE));
     }
+
+    /* comprehensive filequota setup */
+    fix_filequota();
 
     /* correct object count */
     rsrcd->rsrc_incr("System", "objects", nil,
