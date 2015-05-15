@@ -1891,14 +1891,7 @@ static void cmd_people(object user, string cmd, string str)
  */
 private string swapnum(int num, int div)
 {
-    string str;
-
-    str = (string) ((float) num / (float) div);
-    str += (sscanf(str, "%*s.") != 0) ? "00" : ".00";
-    if (strlen(str) > 4) {
-	str = (str[3] == '.') ? str[.. 2] : str[.. 3];
-    }
-    return str;
+    return (string)(num / div);
 }
 
 /*
