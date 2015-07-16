@@ -1,5 +1,6 @@
 # include <kernel/kernel.h>
 # include <kernel/user.h>
+# include <status.h>
 
 private object userd;		/* user daemon */
 private int port;		/* port # */
@@ -91,10 +92,18 @@ static void open(mixed *tls)
  */
 static void close(mixed *tls, int dest)
 {
+    int stack;
+    int ticks;
+
+    stack = status(ST_STACKDEPTH);
+    ticks = status(ST_TICKS);
+
     rlimits (-1; -1) {
 	if (user) {
 	    catch {
-		user->logout(dest);
+		rlimits (stack; ticks) {
+		    user->logout(dest);
+		}
 	    }
 	}
 	if (!dest) {
