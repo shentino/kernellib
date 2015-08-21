@@ -646,3 +646,34 @@ void reboot()
 	}
     }
 }
+
+/*
+ * NAME:	patch()
+ * DESCRIPTION:	Restore system resources that have been removed.
+ */
+void patch()
+{
+    if (SYSTEM()) {
+	int sz;
+	object *rsrc_objs;
+
+	resources = ([
+	  "callouts" :		({ -1,  0,    0 }),
+	  "objects" :		({ -1,  0,    0 }),
+	  "events" :		({ -1,  0,    0 }),
+	  "stack" :		({ -1,  0,    0 }),
+	  "ticks" :		({ -1,  0,    0 }),
+	  "tick usage" :	({ -1, 10, 3600 }),
+	  "filequota" :		({ -1,  0,    0 }),
+	  "editors" :		({ -1,  0,    0 }),
+	  "create stack" :	({ -1,  0,    0 }),
+	  "create ticks" :	({ -1,  0,    0 }),
+	]) + resources;
+
+	rsrc_objs = map_values(owners);
+
+	for (sz = sizeof(rsrc_objs) - 1; sz >= 0; --sz) {
+	    rsrc_objs[sz]->patch();
+	}
+    }
+}
