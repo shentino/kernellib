@@ -192,7 +192,7 @@ int rsrc_incr(string name, mixed index, int incr, mixed *grsrc, int force)
 		}
 
 		rlimits (-1; -1) {
-		    if (index) {
+		    if (index != nil) {
 			/*
 			 * indexed resource
 			 */
