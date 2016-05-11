@@ -1932,6 +1932,28 @@ private string percentage(mixed part, mixed total)
 }
 
 /*
+ * NAME:	sector_size()
+ * DESCRIPTION:	show a sector size
+ */
+private string sector_size(int amt)
+{
+    int w;
+    int t;
+
+    amt *= 10;
+    amt /= 1024;
+
+    w = amt / 10;
+    t = amt % 10;
+
+    if (t) {
+	return w + "." + t + "K";
+    } else {
+	return w + "K";
+    }
+}
+
+/*
  * NAME:	cmd_status()
  * DESCRIPTION:	show driver status
  */
@@ -1953,8 +1975,8 @@ static void cmd_status(object user, string cmd, string str)
 	       ntoa(status[ST_SWAPSIZE]) + " " +
   percentage(status[ST_SWAPUSED], status(ST_SWAPSIZE)) +
   "    Start time:   " + ctime(status[ST_STARTTIME])[4 ..] + "\n" +
-"sector size:   " + (((float) status[ST_SECTORSIZE] / 1024.0) + "K" +
-		     SPACE16)[..15];
+"sector size:   " + (sector_size(status[ST_SECTORSIZE]) +
+		     SPACE16)[.. 15];
 	if ((int) status[ST_STARTTIME] != (int) status[ST_BOOTTIME]) {
 	    str += "           Last reboot:  " +
 		   ctime(status[ST_BOOTTIME])[4 ..];
