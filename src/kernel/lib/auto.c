@@ -561,21 +561,6 @@ static mixed **call_trace()
 }
 
 /*
- * NAME:	process_precompiled()
- * DESCRIPTION:	process precompiled objects in a status() return value
- */
-private void process_precompiled(mixed *precompiled)
-{
-    int i;
-
-    if (precompiled) {
-	for (i = sizeof(precompiled); --i >= 0; ) {
-	    precompiled[i] = object_name(precompiled[i]);
-	}
-    }
-}
-
-/*
  * NAME:	process_callouts()
  * DESCRIPTION:	process callouts in a status(obj) return value
  */
@@ -633,7 +618,6 @@ static mixed status(varargs mixed obj, mixed index)
 	if (status[ST_STACKDEPTH] >= 0) {
 	    status[ST_STACKDEPTH]++;
 	}
-	process_precompiled(status[ST_PRECOMPILED]);
 	break;
 
     case T_INT:
@@ -641,8 +625,6 @@ static mixed status(varargs mixed obj, mixed index)
 	status = ::status()[obj];
 	if (obj == ST_STACKDEPTH && status >= 0) {
 	    status++;
-	} else if (obj == ST_PRECOMPILED) {
-	    process_precompiled(status);
 	}
 	break;
 
