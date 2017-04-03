@@ -917,7 +917,7 @@ static void interrupt()
  * NAME:	_runtime_error()
  * DESCRIPTION:	handle runtime error, with proper TLS on the stack
  */
-private void _runtime_error(mixed tls, string str, int caught, int ticks,
+private string _runtime_error(mixed tls, string str, int caught, int ticks,
 			    mixed **trace)
 {
     string line, func, progname, objname;
@@ -944,7 +944,7 @@ private void _runtime_error(mixed tls, string str, int caught, int ticks,
     }
 
     if (errord) {
-	errord->runtime_error(str, caught, trace);
+	return errord->runtime_error(str, caught, trace);
     } else {
 	if (caught != 0) {
 	    str += " [caught]";
@@ -1006,7 +1006,7 @@ private void _runtime_error(mixed tls, string str, int caught, int ticks,
  * NAME:	runtime_error()
  * DESCRIPTION:	log a runtime error
  */
-static void runtime_error(string str, int caught, int ticks)
+static string runtime_error(string str, int caught, int ticks)
 {
     mixed **trace, tls;
 
@@ -1025,18 +1025,18 @@ static void runtime_error(string str, int caught, int ticks)
 		   sscanf(trace[caught - 1][TRACE_PROGNAME],
 			  "/kernel/%*s") != 0) {
 	    tls[1] = str;
-	    return;
+	    return nil;
 	}
     }
 
-    _runtime_error(tls, str, caught, ticks, trace);
+    return _runtime_error(tls, str, caught, ticks, trace);
 }
 
 /*
  * NAME:	atomic_error()
  * DESCRIPTION:	log a runtime error in atomic code
  */
-static void atomic_error(string str, int atom, int ticks)
+static string atomic_error(string str, int atom, int ticks)
 {
     mixed **trace;
     string line, func, progname, objname;
@@ -1047,7 +1047,7 @@ static void atomic_error(string str, int atom, int ticks)
     sz = sizeof(trace) - 1;
 
     if (errord) {
-	errord->atomic_error(str, atom, trace);
+	return errord->atomic_error(str, atom, trace);
     } else {
 	str += " [atomic]\n";
 
