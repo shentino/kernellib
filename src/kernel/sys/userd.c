@@ -6,7 +6,7 @@
 object *users;		/* user mappings */
 mapping names;		/* name : connection object */
 object *connections;	/* saved connections */
-mapping telnet, binary;	/* port managers */
+mapping telnet, binary, datagram;	/* port managers */
 
 /*
  * NAME:	create()
@@ -17,6 +17,7 @@ static void create()
     /* load essential objects */
     if (!find_object(TELNET_CONN)) { compile_object(TELNET_CONN); }
     if (!find_object(BINARY_CONN)) { compile_object(BINARY_CONN); }
+    if (!find_object(DATAGRAM_CONN)) { compile_object(DATAGRAM_CONN); }
     if (!find_object(DEFAULT_USER)) { compile_object(DEFAULT_USER); }
 
     /* initialize user arrays */
@@ -24,6 +25,7 @@ static void create()
     names = ([ ]);
     telnet = ([ ]);
     binary = ([ ]);
+    datagram = ([ ]);
 }
 
 /*
@@ -57,6 +59,21 @@ object binary_connection(mixed *tls, int port)
 }
 
 /*
+ * NAME:	datagram_connection()
+ * DESCRIPTION:	return a new datagram connection object
+ */
+object datagram_connection(mixed *tls, int port)
+{
+    if (previous_program() == DRIVER) {
+	object conn;
+
+	conn = clone_object(DATAGRAM_CONN);
+	conn->set_port(port);
+	return conn;
+    }
+}
+
+/*
  * NAME:	set_telnet_manager()
  * DESCRIPTION:	set the telnet manager object, which determines what the
  *		user object is, based on the first line of input
@@ -80,6 +97,17 @@ void set_binary_manager(int port, object manager)
     }
 }
 
+/*
+ * NAME:	set_datagram_manager()
+ * DESCRIPTION:	set the binary manager object, which determines what the
+ *		user object is, based on the first line of input
+ */
+void set_datagram_manager(int port, object manager)
+{
+    if (SYSTEM()) {
+	datagram[port] = manager;
+    }
+}
 
 /*
  * NAME:	telnet_user()
@@ -118,6 +146,28 @@ object binary_user(int port, string str)
 	if (!user) {
 	    user = binary[port];
 	    if (user && (str != "admin" || port != 0)) {
+		user = (object LIB_USER) user->select(str);
+	    } else {
+		user = clone_object(DEFAULT_USER);
+	    }
+	}
+	return user;
+    }
+}
+
+/*
+ * NAME:	datagram_user()
+ * DESCRIPTION:	select user object for datagram connection, based on input
+ */
+object datagram_user(int port, string str)
+{
+    if (previous_program() == LIB_CONN) {
+	object user;
+
+	user = names[str];
+	if (!user) {
+	    user = datagram[port];
+	    if (user) {
 		user = (object LIB_USER) user->select(str);
 	    } else {
 		user = clone_object(DEFAULT_USER);
@@ -289,5 +339,17 @@ void reboot()
 
 	users = ({ });
 	names = ([ ]);
+    }
+}
+
+/*
+ * NAME:	datagram_prepare()
+ * DESCRIPTION:	prepare to receive datagram connections
+ */
+void datagram_prepare()
+{
+    if (SYSTEM()) {
+	if (!datagram) { datagram = ([ ]); }
+	if (!find_object(DATAGRAM_CONN)) { compile_object(DATAGRAM_CONN); }
     }
 }

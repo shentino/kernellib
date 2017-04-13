@@ -4,6 +4,7 @@
 # define LIB_WIZTOOL		("/kernel" + INHERITABLE_SUBDIR + "wiztool")
 # define TELNET_CONN		("/kernel" + CLONABLE_SUBDIR + "telnet")
 # define BINARY_CONN		("/kernel" + CLONABLE_SUBDIR + "binary")
+# define DATAGRAM_CONN		("/kernel" + CLONABLE_SUBDIR + "datagram")
 # define API_USER		("/kernel" + INHERITABLE_SUBDIR + "api/user")
 
 # define DEFAULT_USER		("/kernel" + CLONABLE_SUBDIR + "user")

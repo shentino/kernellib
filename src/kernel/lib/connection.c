@@ -70,7 +70,11 @@ static void open(mixed *tls)
     banner = call_other(userd, "query_" + conntype + "_banner", port,
 			this_object());
     if (banner) {
-	send_message(banner);
+	if (conntype == "datagram") {
+	    send_datagram(banner);
+	} else {
+	    send_message(banner);
+	}
     }
 
     timeout = call_other(userd, "query_" + conntype + "_timeout", port,

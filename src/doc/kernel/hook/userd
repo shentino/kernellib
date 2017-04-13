@@ -1,13 +1,19 @@
 void set_telnet_manager(int port, object telnetd) [System only]
 void set_binary_manager(int port, object binaryd) [System only]
+void set_datagram_manager(int port, object datagramd) [System only]
 
-    Install a manager on a specific port for a telnet/binary connection, in
+    Install a manager on a specific port for a connection, in
     which the following functions will be called:
 
     * object select(string str)
 
-	Return a user object, selected by the argument string, which is the
+	Return a user object, selected by the argument string.
+
+	For a telnet or binary connection, it will be the
 	first line of input on that connection.
+
+	For a datagram connection, it will be the first packet
+	on that connection.
 
     * int query_timeout(object connection)
 
