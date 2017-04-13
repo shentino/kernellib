@@ -173,6 +173,15 @@ static void open_datagram()
 }
 
 /*
+ * NAME:	datagram_attach()
+ * DESCRIPTION:	attach a datagram channel to this connection
+ */
+static void datagram_attach()
+{
+    ::datagram_attach(allocate(driver->query_tls_size()));
+}
+
+/*
  * NAME:	receive_datagram()
  * DESCRIPTION:	receive a datagram
  */

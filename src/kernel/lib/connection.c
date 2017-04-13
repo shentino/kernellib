@@ -292,6 +292,17 @@ static void open_datagram(mixed *tls)
 }
 
 /*
+ * NAME:	datagram_attach()
+ * DESCRIPTION:	attach a datagram channel to this connection
+ */
+static void datagram_attach(mixed *tls)
+{
+    if (user) {
+	user->datagram_attach();
+    }
+}
+
+/*
  * NAME:	receive_datagram()
  * DESCRIPTION:	forward a datagram to the user
  */
