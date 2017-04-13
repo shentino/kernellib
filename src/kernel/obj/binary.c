@@ -25,9 +25,10 @@ static void create(int clone)
  * NAME:	open()
  * DESCRIPTION:	open the connection
  */
-static void open()
+static int open()
 {
     ::open(allocate(driver->query_tls_size()));
+    return TRUE;
 }
 
 /*
