@@ -197,6 +197,18 @@ void restore()
 }
 
 /*
+ * NAME:	reset()
+ * DESCRIPTION: reset this object
+ */
+void reset()
+{
+    if (SYSTEM()) {
+	uaccess = ([ ]);
+	gaccess = ([ ]);
+    }
+}
+
+/*
  * NAME:	set_access()
  * DESCRIPTION:	set access
  */
