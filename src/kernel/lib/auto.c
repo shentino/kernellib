@@ -1308,7 +1308,9 @@ static int rename_file(string from, string to)
 
     fcreator = driver->creator(from);
     tcreator = driver->creator(to);
-    size = driver->file_size(from, TRUE);
+    if (fcreator != tcreator) {
+	size = driver->file_size(from, TRUE);
+    }
     rsrcd = ::find_object(RSRCD);
     rsrc = rsrcd->rsrc_get(tcreator, "filequota");
     if (size != 0 && fcreator != tcreator && creator != "System" &&
