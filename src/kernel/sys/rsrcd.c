@@ -171,6 +171,20 @@ void remove_rsrc(string name)
     object *objects;
 
     if (previous_program() == API_RSRC && (rsrc=resources[name])) {
+	switch(name) {
+	case "callouts":
+	case "objects":
+	case "events":
+	case "stack":
+	case "ticks":
+	case "filequota":
+	case "editors":
+	case "create stack":
+	case "create ticks":
+	case "tick usage":
+	    error("Cannot remove system resource");
+	}
+
 	objects = map_values(owners);
 	i = sizeof(objects);
 	rlimits (-1; -1) {
