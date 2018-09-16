@@ -164,15 +164,6 @@ static void message_done()
 }
 
 /*
- * NAME:	open_datagram()
- * DESCRIPTION:	open a datagram channel for this connection
- */
-static void open_datagram()
-{
-    ::open_datagram(allocate(driver->query_tls_size()));
-}
-
-/*
  * NAME:	datagram_attach()
  * DESCRIPTION:	attach a datagram channel to this connection
  */

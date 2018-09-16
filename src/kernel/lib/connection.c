@@ -285,17 +285,6 @@ void datagram_challenge(string str)
 }
 
 /*
- * NAME:	open_datagram()
- * DESCRIPTION:	open a datagram channel for this connection
- */
-static void open_datagram(mixed *tls)
-{
-    if (user) {
-	user->open_datagram();
-    }
-}
-
-/*
  * NAME:	datagram_attach()
  * DESCRIPTION:	attach a datagram channel to this connection
  */
