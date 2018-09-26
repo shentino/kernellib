@@ -848,7 +848,17 @@ static int call_out(string func, mixed delay, mixed args...)
 	/* direct callouts for kernel objects */
 	return ::call_out(func, delay, args...);
     }
-    return ::call_out("_F_callout", delay, func, 0, args);
+    catch {
+	rlimits (-1; -1) {
+	    type = ::call_out("_F_callout", delay, func, FALSE, args);
+	    if (::find_object(RSRCD)->rsrc_incr(owner, "callouts",
+						this_object(), 1)) {
+		return type;
+	    }
+	    ::remove_call_out(type);
+	    error("Too many callouts");
+	}
+    } : error(::call_trace()[1][TRACE_FIRSTARG][1]);
 }
 
 /*
@@ -863,9 +873,20 @@ static mixed remove_call_out(int handle)
 	if (!next && prev) {
 	    error("No callouts in non-persistent object");
 	}
-	if ((delay=::remove_call_out(handle)) != -1 &&
-	    ::find_object(RSRCD)->remove_callout(nil, this_object(), handle)) {
-	    return 0;
+	rlimits (-1; -1) {
+	    if ((delay = ::remove_call_out(handle)) != -1) {
+		object rsrcd;
+
+		rsrcd = ::find_object(RSRCD);
+
+		if (!sscanf(object_name(this_object()), "/kernel/%*s")) {
+		    rsrcd->rsrc_incr(owner, "callouts", this_object(), -1, TRUE);
+		}
+
+		if (rsrcd->remove_callout(nil, this_object(), handle)) {
+		    return 0;
+		}
+	    }
 	}
 	return delay;
     }
@@ -879,6 +900,9 @@ nomask void _F_callout(string func, int handle, mixed *args)
 {
     if (!previous_program()) {
 	if (handle == 0 && !::find_object(RSRCD)->suspended(this_object())) {
+	    rlimits (-1; -1) {
+		::find_object(RSRCD)->rsrc_incr(owner, "callouts", this_object(), -1, TRUE);
+	    }
 	    _F_call_limited(func, args);
 	} else {
 	    mixed *tls;
@@ -911,6 +935,10 @@ nomask void _F_release(mixed handle)
 
 	callouts = ::status(this_object())[O_CALLOUTS];
 	::remove_call_out(handle);
+	rlimits (-1; -1) {
+	    ::find_object(RSRCD)->rsrc_incr(
+		owner, "callouts", this_object(), -1, TRUE);
+	}
 	for (i = sizeof(callouts); callouts[--i][CO_HANDLE] != handle; ) ;
 	handle = allocate(::find_object(DRIVER)->query_tls_size());
 	_F_call_limited(callouts[i][CO_FIRSTXARG],
@@ -1073,7 +1101,18 @@ static object *query_subscribed_event(string name)
 nomask void _F_start_event(string name, mixed *args)
 {
     if (previous_program() == AUTO) {
-	::call_out("_F_callout", 0, name, FALSE, args);
+	catch {
+	    rlimits (-1; -1) {
+		int handle;
+
+		handle = ::call_out("_F_callout", 0, name, FALSE, args);
+		if (!::find_object(RSRCD)->rsrc_incr(owner, "callouts",
+						     this_object(), 1)) {
+		    ::remove_call_out(handle);
+		    error("Too many callouts");
+		}
+	    }
+	} : error(::call_trace()[1][TRACE_FIRSTARG][1]);
     }
 }
 
