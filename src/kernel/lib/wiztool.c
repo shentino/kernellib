@@ -1937,19 +1937,18 @@ private string percentage(mixed part, mixed total)
  */
 private string sector_size(int amt)
 {
-    int w;
+    int k;
+    int b;
     int t;
 
-    amt *= 10;
-    amt /= 1024;
-
-    w = amt / 10;
-    t = amt % 10;
+    k = amt / 1024;
+    b = amt % 1024;
+    t = (b * 10) / 1024;
 
     if (t) {
-	return w + "." + t + "K";
+	return k + "." + t + "KiB";
     } else {
-	return w + "K";
+	return k + "KiB";
     }
 }
 
